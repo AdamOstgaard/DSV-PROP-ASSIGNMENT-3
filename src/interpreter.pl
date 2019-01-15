@@ -14,7 +14,7 @@ To run your program you should call run/2 as in the following example:
 run(InputFile,OutputFile):-
 	tokenize(InputFile,Program),
 	parse(ParseTree,Program,[]),
-	evaluate(ParseTree,[],VariablesOut), 
+	%evaluate(ParseTree,[],VariablesOut),
 	output_result(OutputFile,ParseTree,VariablesOut).
 
 output_result(OutputFile,ParseTree,Variables):- 
@@ -78,13 +78,50 @@ parse(-ParseTree)-->
 	and returning a parse tree.
 ***/
 
+
 /* WRITE YOUR CODE FOR THE PARSER HERE */
-	
+assignment(assignment(Identifier, assign_op, Expression, semicolon)) --> ident(Identifier), assign_op, expression(Expression), semicolon.
+assignment([E|Es]) --> assignment(E), assignment(Es).
+
+ident(ident(Variable)) --> [Variable], {atom(Variable)}.
+
+assign_op --> [=].
+
+expression(expression(Term, Operator, Expression)) --> term(Term), exp_op(Operator), expression(Expression).
+expression(expression(Term)) --> term(Term).
+
+term(term(Factor, Operator, Term)) --> factor(Factor), operator(Operator), term(Term).
+term(term(Factor)) --> factor(Factor).
+value(int(Number)) --> [Number], {integer(Number)}.
+value(variable(Variable)) --> [Variable], {atom(Variable)}.
+
+factor(factor(Value)) --> value(Value).
+factor(factor(Value, Operator, Term)) --> value(Value), operator(Operator), term(Term).
+factor(factor(left_paren, Expression, right_paren)) --> left_paren, expression(Expression), right_paren.
+
+
+exp_op(add_op) --> [+].
+exp_op(sub_op) --> [-].
+operator(mult_op) --> [*].
+operator(div_op) --> [/].
+left_paren --> ['('].
+right_paren --> [')'].
+semicolon --> [';'].
+
+% Note: I'm not sure if this is the right way to implement the head for the parser.
+% This is the only way I could figure out so that the output of the parser is printed to console so it's easier to debug.
+parse(ParseTree, Program, []):-
+	write(Program),
+	assignment(ParseTree,Program,[]),
+	write('Output of parser:\n'), write(ParseTree), write('\n').
 /***
 evaluate(+ParseTree,+VariablesIn,-VariablesOut):-
 	Evaluates a parse-tree and returns the state of the program
 	after evaluation as a list of variables and their values in 
 	the form [var = value, ...].
 ***/
-
 /* WRITE YOUR CODE FOR THE EVALUATOR HERE */
+
+/*evaluate(ParseTree, VariablesIn, VariablesOut):-
+	ParseTree = assignment(A).
+*/
